@@ -24,6 +24,9 @@ For information on Waiting until elements are present in the HTML see:
 """
 import requests
 from behave import given
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions
 
 # HTTP Return Codes
 HTTP_200_OK = 200
@@ -48,70 +51,43 @@ def step_impl(context):
     #
     for row in context.table:
         payload = {
-            "name": row["name"],
-            "description": row["description"],
-            "price": row["price"],
-            "availability": row['available'] in ['True', 'true', '1'],
-            "category": row["category"],
+            "name": row['name'],
+            "description": row['description'],
+            "price": row['price'],
+            "available": row['available'] in ['True', 'true', '1'],
+            "category": row['category']
         }
-        context.resp = requests.post(rest_endpoint, jsoin=payload)
-        assert context.resp.status_code == status.HTTP_201_CREATED
+        context.resp = requests.post(rest_endpoint, json=payload)
+        assert context.resp.status_code == HTTP_201_CREATED
 
-@when(u'I press the "{btn-name}" button')
+@when(u'I press the "{btn_name}" button')
 def step_impl(context, btn_name):
-    
+    btn_id = btn_name.lower() + "-btn"
+    context.driver.find_element_by_id(btn_id).click()
 
 
-@when(u'I press the "Update" button')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: When I press the "Update" button')
+@then(u'I should see "{result_content}" in the results')
+def step_impl(context, result_content):
+    found = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'search_results'),
+            result_content
+        )
+    )
+    assert(found)
+
+@then(u'I should not see "{result_content}" in the results')
+def step_impl(context, result_content):
+    element = context.driver.find_element(By.ID, 'search_results')
+    assert(result_content not in element.text)
 
 
-@then(u'I should see "Fedora" in the results')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should see "Fedora" in the results')
-
-
-@then(u'I should not see "Hat" in the results')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should not see "Hat" in the results')
-
-
-@when(u'I press the "Delete" button')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: When I press the "Delete" button')
-
-
-@then(u'I should see the message "Product has been Deleted!"')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should see the message "Product has been Deleted!"')
-
-
-@then(u'I should see "Hat" in the results')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should see "Hat" in the results')
-
-
-@then(u'I should see "Shoes" in the results')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should see "Shoes" in the results')
-
-
-@then(u'I should see "Big Mac" in the results')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should see "Big Mac" in the results')
-
-
-@then(u'I should see "Sheets" in the results')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should see "Sheets" in the results')
-
-
-@then(u'I should not see "Shoes" in the results')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should not see "Shoes" in the results')
-
-
-@then(u'I should not see "Sheets" in the results')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should not see "Sheets" in the results')
+@then(u'I should see the message "{msg}"')
+def step_impl(context, msg):
+    found = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'flash_message'),
+            msg
+        )
+    )
+    assert(found)
