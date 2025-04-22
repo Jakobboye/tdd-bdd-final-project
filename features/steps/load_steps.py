@@ -24,9 +24,6 @@ For information on Waiting until elements are present in the HTML see:
 """
 import requests
 from behave import given
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions
 
 # HTTP Return Codes
 HTTP_200_OK = 200
@@ -59,35 +56,3 @@ def step_impl(context):
         }
         context.resp = requests.post(rest_endpoint, json=payload)
         assert context.resp.status_code == HTTP_201_CREATED
-
-@when(u'I press the "{btn_name}" button')
-def step_impl(context, btn_name):
-    btn_id = btn_name.lower() + "-btn"
-    context.driver.find_element_by_id(btn_id).click()
-
-
-@then(u'I should see "{result_content}" in the results')
-def step_impl(context, result_content):
-    found = WebDriverWait(context.driver, context.wait_seconds).until(
-        expected_conditions.text_to_be_present_in_element(
-            (By.ID, 'search_results'),
-            result_content
-        )
-    )
-    assert(found)
-
-@then(u'I should not see "{result_content}" in the results')
-def step_impl(context, result_content):
-    element = context.driver.find_element(By.ID, 'search_results')
-    assert(result_content not in element.text)
-
-
-@then(u'I should see the message "{msg}"')
-def step_impl(context, msg):
-    found = WebDriverWait(context.driver, context.wait_seconds).until(
-        expected_conditions.text_to_be_present_in_element(
-            (By.ID, 'flash_message'),
-            msg
-        )
-    )
-    assert(found)
